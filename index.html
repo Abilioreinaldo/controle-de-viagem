@@ -1,0 +1,596 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CP4 Viagens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: barra superior com troca App/Central; App = celular centralizado + roteiro de demo; Central = menu lateral + tela */
+:root{
+  --bg:#F2F5F3; --surface:#FFFFFF; --surface-2:#F7FAF8; --line:#DCE3DF; --line-2:#C9D3CE;
+  --fg:#0F1E1B; --muted:#4A5A56;
+  --accent:#0B6B5E; --accent-fg:#FFFFFF; --accent-soft:#E3F1EC; --accent-ink:#084C43;
+  --deep:#0F1E1B; --deep-2:#1C2F2B; --deep-3:#2A3D39; --deep-fg:#FFFFFF; --deep-muted:#B9C7C2; --mint:#7EE0BF;
+  --ok:#146C43; --ok-bg:#E6F4EC; --warn:#8A4B00; --warn-bg:#FDF1E2; --bad:#B42318; --bad-bg:#FDECEA; --info:#3346A6; --info-bg:#E8EEFD;
+  --amber:#E8A33D; --blue:#5B7BD5; --stone:#9FB3AC; --track:#E3EAE6;
+  --display:'Bricolage Grotesque','Trebuchet MS',sans-serif;
+  --body:'IBM Plex Sans','Segoe UI',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,'SFMono-Regular',Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0C1513; --surface:#13201D; --surface-2:#182824; --line:#26352F; --line-2:#34463F;
+  --fg:#E6EEEA; --muted:#9DB0A9;
+  --accent:#3FB7A0; --accent-fg:#062520; --accent-soft:#123A33; --accent-ink:#9FE3D2;
+  --deep:#08110F; --deep-2:#16241F; --deep-3:#24352F; --deep-fg:#F2F7F5; --deep-muted:#A9BAB4; --mint:#7EE0BF;
+  --ok:#7FD6A3; --ok-bg:#133524; --warn:#F2B866; --warn-bg:#3A2A12; --bad:#F59A90; --bad-bg:#3E1A17; --info:#A9BAF5; --info-bg:#1C2748;
+  --stone:#5F736C; --track:#24352F; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0C1513; --surface:#13201D; --surface-2:#182824; --line:#26352F; --line-2:#34463F;
+  --fg:#E6EEEA; --muted:#9DB0A9;
+  --accent:#3FB7A0; --accent-fg:#062520; --accent-soft:#123A33; --accent-ink:#9FE3D2;
+  --deep:#08110F; --deep-2:#16241F; --deep-3:#24352F; --deep-fg:#F2F7F5; --deep-muted:#A9BAB4; --mint:#7EE0BF;
+  --ok:#7FD6A3; --ok-bg:#133524; --warn:#F2B866; --warn-bg:#3A2A12; --bad:#F59A90; --bad-bg:#3E1A17; --info:#A9BAF5; --info-bg:#1C2748;
+  --stone:#5F736C; --track:#24352F; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:15px;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+h1,h2,h3{margin:0;text-wrap:balance}
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
+
+/* barra superior */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--deep);color:var(--deep-fg);padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px}
+.mark{width:34px;height:34px;border-radius:9px;background:#0B6B5E;color:#fff;display:grid;place-items:center;font-family:var(--display);font-weight:700;font-size:13px;letter-spacing:.5px;flex-shrink:0}
+.brand b{font-family:var(--display);font-size:19px}
+.brand span{font-size:12px;color:var(--deep-muted)}
+.seg{display:flex;background:var(--deep-2);border-radius:12px;padding:4px;gap:4px}
+.seg button{border:0;background:transparent;color:var(--deep-muted);min-height:40px;padding:0 16px;border-radius:9px;font-weight:600;font-size:14px}
+.seg button[aria-pressed="true"]{background:#0B6B5E;color:#fff}
+
+/* ===== APP ===== */
+.appwrap{display:flex;gap:40px;justify-content:center;align-items:flex-start;padding:28px 16px 48px;flex-wrap:wrap}
+.phone{width:390px;max-width:100%;height:800px;border-radius:40px;border:10px solid var(--deep);background:var(--bg);position:relative;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 24px 60px rgba(8,30,26,.18)}
+.ph-head{background:var(--deep);color:var(--deep-fg);padding:18px 18px 14px;display:flex;flex-direction:column;gap:12px;flex-shrink:0}
+.ph-row{display:flex;align-items:center;justify-content:space-between}
+.avatar{width:44px;height:44px;border-radius:22px;border:1px solid var(--deep-3);background:var(--deep-2);color:var(--deep-fg);font-weight:600;font-size:14px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.hchip{padding:6px 10px;border-radius:999px;background:var(--deep-2);font-size:13px;font-weight:600}
+.ph-main{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.card.focus{border:2px solid var(--accent)}
+.card.deep{background:var(--deep);color:var(--deep-fg);border-color:var(--deep)}
+.eyebrow{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+.deep .eyebrow{color:var(--mint)}
+.pill{display:inline-flex;align-items:center;font-size:12px;font-weight:600;padding:4px 8px;border-radius:6px;white-space:nowrap;align-self:flex-start}
+.ok{background:var(--ok-bg);color:var(--ok)}.warn{background:var(--warn-bg);color:var(--warn)}.bad{background:var(--bad-bg);color:var(--bad)}.info{background:var(--info-bg);color:var(--info)}.acc{background:var(--accent-soft);color:var(--accent-ink)}.neutral{background:var(--surface-2);color:var(--muted);border:1px solid var(--line)}
+.bar{height:8px;background:var(--track);border-radius:4px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);border-radius:4px;transition:width .4s}
+.deep .bar{background:var(--deep-3)}
+.btn{min-height:48px;border-radius:14px;border:1px solid var(--line-2);background:var(--surface);font-weight:600;font-size:15px;padding:0 16px}
+.btn.primary{background:var(--accent);color:var(--accent-fg);border:0;min-height:56px;font-size:17px}
+.btn.sm{min-height:36px;border-radius:9px;font-size:13px;padding:0 12px}
+.btn.primary.sm{min-height:36px;font-size:13px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.photo{min-height:80px;border:2px dashed var(--stone);border-radius:14px;background:var(--surface-2);display:flex;align-items:center;justify-content:center;gap:10px;font-weight:500;font-size:15px;cursor:pointer;padding:8px;text-align:center}
+.photo.done{border-style:solid;border-color:var(--ok);background:var(--ok-bg);color:var(--ok)}
+.photo input{position:absolute;width:1px;height:1px;opacity:0}
+.stop{display:flex;gap:12px}
+.stop .rail{display:flex;flex-direction:column;align-items:center;width:16px}
+.stop .dot{width:14px;height:14px;border-radius:7px;border:2px solid var(--stone);background:var(--surface);margin-top:3px;flex-shrink:0}
+.stop .ln{width:2px;flex:1;background:var(--line);margin:2px 0}
+.stop.done .dot{background:var(--accent);border-color:var(--accent)}.stop.done .ln{background:var(--accent)}
+.stop.cur .dot{border-color:var(--accent)}.stop.cur .place{color:var(--accent)}
+.stop .body{flex:1;display:flex;justify-content:space-between;gap:8px;padding-bottom:14px}
+.stop .place{font-weight:600;font-size:16px}
+.small{font-size:13px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tile{min-height:72px;border:1px solid var(--line);border-radius:14px;background:var(--surface);display:flex;align-items:center;gap:10px;padding:0 14px;font-weight:600;font-size:15px;text-align:left}
+.tile svg{color:var(--accent);flex-shrink:0}
+.exp{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.exp.tap{cursor:pointer}
+.row{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.big{font-family:var(--display);font-size:48px;font-weight:700;line-height:1}
+.jbtn{min-height:56px;border-radius:14px;border:2px solid var(--line);background:var(--surface);font-size:16px;font-weight:600}
+.jbtn[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.timeline{display:flex;height:14px;gap:2px;border-radius:4px;overflow:hidden}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:4px}.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.doc{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.ph-nav{height:76px;flex-shrink:0;background:var(--surface);border-top:1px solid var(--line);display:flex}
+.ph-nav button{flex:1;border:0;background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-size:13px;font-weight:600;border-top:3px solid transparent}
+.ph-nav button[aria-current="page"]{color:var(--accent);border-top-color:var(--accent)}
+.sheet-bg{position:absolute;inset:0;background:rgba(8,20,18,.55);display:flex;flex-direction:column;justify-content:flex-end;z-index:5}
+.sheet{background:var(--surface);border-radius:20px 20px 0 0;padding:16px 18px 22px;display:flex;flex-direction:column;gap:14px;max-height:92%;overflow-y:auto}
+.sheet h3{font-family:var(--display);font-size:22px}
+.iconbtn{width:44px;height:44px;border-radius:22px;border:0;background:var(--surface-2);display:grid;place-items:center}
+label.f{display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:500}
+.inp{min-height:48px;border:1px solid var(--line-2);border-radius:12px;padding:0 14px;font-size:17px;background:var(--surface);width:100%}
+.chipset{display:flex;gap:8px;flex-wrap:wrap}
+.chipset button{min-height:44px;padding:0 16px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);font-size:14px;font-weight:500}
+.chipset button[aria-pressed="true"]{border:2px solid var(--accent);background:var(--accent-soft);color:var(--accent-ink);font-weight:600}
+.hint{font-size:14px;line-height:20px;color:var(--accent-ink);background:var(--accent-soft);padding:10px 12px;border-radius:10px}
+.toast{position:absolute;left:14px;right:14px;bottom:88px;background:var(--deep);color:var(--deep-fg);border-radius:12px;padding:12px 14px;font-size:14px;display:flex;justify-content:space-between;align-items:center;gap:8px;z-index:6;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+.demo{width:340px;max-width:100%;display:flex;flex-direction:column;gap:14px;padding-top:8px}
+.demo h2{font-family:var(--display);font-size:26px}
+.demo ol{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:10px;color:var(--muted)}
+.demo li b{color:var(--fg)}
+.demo .note{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:12px}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+
+/* ===== CENTRAL ===== */
+.central{display:grid;grid-template-columns:232px minmax(0,1fr);min-height:calc(100vh - 56px)}
+.side{background:var(--deep);color:var(--deep-fg);padding:20px 14px;display:flex;flex-direction:column;gap:4px}
+.side button{min-height:44px;border:0;background:transparent;color:var(--deep-muted);text-align:left;padding:0 12px;border-radius:10px;font-size:15px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.side button[aria-current="page"]{background:var(--deep-2);color:var(--deep-fg);font-weight:600}
+.side .badge{font-size:12px;background:var(--bad);color:var(--surface);border-radius:999px;padding:1px 8px;font-weight:600}
+.side .foot{margin-top:auto;font-size:12px;color:var(--deep-muted);padding:12px}
+.screen{padding:26px 28px 40px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.shead{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.shead h1{font-family:var(--display);font-size:30px;font-weight:700}
+.actions{display:flex;gap:10px;flex-wrap:wrap}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 18px;display:flex;flex-direction:column;gap:2px}
+.kpi b{font-family:var(--display);font-size:30px}
+.cols{display:grid;gap:18px;align-items:start}
+.cols.prog{grid-template-columns:minmax(0,360px) minmax(0,1fr) minmax(0,320px)}
+.cols.side-r{grid-template-columns:minmax(0,1fr) minmax(0,340px)}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.panel.deep{background:var(--deep);color:var(--deep-fg);border-color:var(--deep)}
+.panel.deep .small{color:var(--deep-muted)}
+.panel h2{font-size:16px;font-weight:600}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:14px}
+.kv.total{border-top:1px solid var(--line);padding-top:10px;font-weight:600}
+.deep .kv.total{border-color:var(--deep-3)}
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;font-size:14px;min-width:760px}
+th{font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);text-align:left;padding:10px 14px;background:var(--surface-2);border-bottom:1px solid var(--line);font-weight:600}
+td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tr.hot td{background:var(--bad-bg)}
+tr.clickable{cursor:pointer}
+tr.clickable:hover td{background:var(--surface-2)}
+td.num,th.num{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.mini{height:6px;background:var(--track);border-radius:3px;margin-top:4px;width:120px}
+.mini i{display:block;height:100%;border-radius:3px}
+.route{display:flex;flex-direction:column;font-size:14px}
+.route .r{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:12px;align-items:center;min-height:36px}
+.route .r.stopr{min-height:42px;font-weight:600}
+.route .r.pause{background:var(--warn-bg);color:var(--warn);border-radius:8px;padding-right:8px}
+.route .m{justify-self:center;width:8px;height:8px;border-radius:2px;background:var(--stone)}
+.route .stopr .m{width:14px;height:14px;border-radius:7px;background:var(--accent)}
+.route .pause .m{background:var(--amber);border-radius:4px}
+.route .ff .m{background:var(--blue)}
+.check{display:flex;gap:10px;align-items:flex-start}
+.fieldbox{min-height:48px;border:1px solid var(--line-2);border-radius:10px;padding:0 12px;background:var(--surface);width:100%;font-size:15px}
+.switch{width:52px;height:30px;border-radius:15px;border:0;background:var(--line-2);padding:3px;display:flex;flex-shrink:0}
+.switch i{width:24px;height:24px;border-radius:12px;background:#fff;transition:transform .2s}
+.switch[aria-checked="true"]{background:var(--accent)}
+.switch[aria-checked="true"] i{transform:translateX(22px)}
+.alert{border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--surface);display:flex;flex-direction:column;gap:8px;font-size:14px}
+.alert.crit{border-color:var(--bad)}.alert.w{border-color:var(--warn)}
+.alert .t{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.alert.crit .t{color:var(--bad)}.alert.w .t{color:var(--warn)}
+.banner{border-radius:12px;padding:12px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;font-size:14px}
+pre.code{margin:0;background:var(--deep);color:var(--deep-fg);border-radius:12px;padding:16px;font-family:var(--mono);font-size:12.5px;line-height:1.55;overflow-x:auto}
+.flow{display:grid;grid-template-columns:minmax(0,220px) 24px minmax(0,220px) minmax(0,1fr);gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}.flow:last-child{border-bottom:0}.flow .node{background:var(--accent-soft);color:var(--accent-ink);border-radius:8px;padding:6px 10px;font-weight:600;font-size:14px}.flow .arrow{text-align:center;color:var(--muted);font-size:18px}
+@media (max-width:700px){.flow{grid-template-columns:minmax(0,1fr) 24px minmax(0,1fr)}.flow .small{grid-column:1/-1}}
+.diagram{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px;overflow-x:auto}
+.ctoast{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--deep);color:var(--deep-fg);border-radius:12px;padding:12px 16px;font-size:14px;z-index:30;display:flex;gap:10px;align-items:center;max-width:calc(100% - 40px);box-shadow:0 8px 24px rgba(0,0,0,.25)}
+
+@media (max-width:1180px){.cols.prog{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.cols.prog>:last-child{grid-column:1/-1}}
+@media (max-width:860px){
+  .central{grid-template-columns:minmax(0,1fr)}
+  .side{flex-direction:row;overflow-x:auto;padding:8px 16px;gap:6px}
+  .side button{white-space:nowrap;flex-shrink:0}
+  .side .foot{display:none}
+  .screen{padding:20px 16px 40px}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .cols.prog,.cols.side-r{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:440px){
+  .appwrap{padding:0 0 24px}
+  .phone{border:0;border-radius:0;height:calc(100vh - 110px);min-height:640px}
+  .demo{padding:0 16px}
+  .top .brand span{display:none}
+}
+</style>
+</head>
+<body>
+
+
+<header class="top">
+  <div class="brand"><div class="mark">CP4</div><div style="display:flex;flex-direction:column;line-height:1.1"><b>Viagens</b><span>Protótipo navegável · dados fictícios</span></div></div>
+  <div class="seg" role="group" aria-label="Alternar visão">
+    <button data-a="mode" data-v="app" id="seg-app">App do motorista</button>
+    <button data-a="mode" data-v="central" id="seg-central">Central do gestor</button>
+  </div>
+</header>
+<div id="root"></div>
+
+<script>
+(function(){
+var I = {
+  pin:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>',
+  receipt:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/></svg>',
+  clock:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',
+  fuel:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 21V5a2 2 0 0 1 2-2h7a2 2 0 0 1 2 2v16"/><path d="M3 21h13"/><path d="M6 8h7"/><path d="M15 10h2a2 2 0 0 1 2 2v5a1.5 1.5 0 0 0 3 0V9l-3-3"/></svg>',
+  toll:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="9" width="4" height="12" rx="1"/><path d="M7 12h14"/><path d="M11 12l2-3M16 12l2-3"/></svg>',
+  wrench:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.5-2.5z"/></svg>',
+  bed:'<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18V7"/><path d="M3 14h18v4"/><path d="M21 14v-3a3 3 0 0 0-3-3h-7v6"/><circle cx="7" cy="11" r="2"/></svg>',
+  cam:'<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>',
+  check:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"/></svg>',
+  x:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>'
+};
+function brl(n){return 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function num(n){return n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+var STOPS=[
+  {kind:'Coleta',place:'CD Paulínia/SP',doc:'Carga 24 t · lacre 88213',time:'06:10',eta:'06:10'},
+  {kind:'Entrega 1',place:'Sorocaba/SP',doc:'NF-e 18.442 · [CLIENTE A]',time:'09:02',eta:'09:02'},
+  {kind:'Entrega 2',place:'Registro/SP',doc:'NF-e 18.447 · janela 13:00–15:00',time:'13:36',eta:'ETA 13:40'},
+  {kind:'Entrega 3',place:'Curitiba/PR',doc:'NF-e 18.451 · janela 17:00–20:00',time:'18:34',eta:'ETA 18:20'}
+];
+var KM={2:218,3:410,4:486};
+var SHEETS={
+  abast:{label:'abastecimento',name:'Abastecimento',hint:'Abasteceu num posto da rede CP4? Não precisa lançar: entra sozinho depois que você aprova o token.',opts:null},
+  ped:{label:'pedágio',name:'Pedágio',hint:'Passagens com tag entram sozinhas pela conciliação. Lance só pagamento em dinheiro, cartão ou free flow sem tag.',opts:['Dinheiro','Cartão','Free flow']},
+  man:{label:'manutenção',name:'Manutenção',hint:'Acima de R$ 300,00 o gestor aprova antes do pagamento.',opts:['Pneu','Mecânica','Elétrica','Outros']},
+  pern:{label:'pernoite',name:'Pernoite',hint:'Ao enviar, sua jornada é encerrada e o descanso de 11h começa a contar.',opts:['Pátio com segurança','Posto','Hotel']}
+};
+var JORNADA={
+  dirigindo:{label:'Dirigindo',big:'4h12',sub:'direção contínua · limite 5h30',pct:76,bar:'var(--amber)',alert:'Pare 30 min em até 1h18. Sugestão: posto da rede CP4 em Registro/SP, km 440, a 38 min.',chip:'Dirigindo · 4h12',cls:'warn'},
+  pausa:{label:'Em pausa',big:'0h00',sub:'mínimo 30 min',pct:0,bar:'var(--mint)',alert:'Após 30 min a direção contínua volta a zero. Direção liberada às 13:32.',chip:'Em pausa',cls:'acc'},
+  refeicao:{label:'Refeição',big:'0h00',sub:'intervalo de 1h',pct:0,bar:'var(--mint)',alert:'O intervalo de refeição não conta como tempo de direção.',chip:'Refeição',cls:'acc'},
+  espera:{label:'Tempo de espera',big:'0h00',sub:'carga, descarga ou fiscalização',pct:0,bar:'var(--blue)',alert:'Registrado separado da direção, para o cálculo correto da jornada.',chip:'Em espera',cls:'info'},
+  descanso:{label:'Descanso',big:'0h00',sub:'mínimo 11h entre jornadas',pct:0,bar:'var(--mint)',alert:'Próxima jornada liberada às 05:34 de amanhã.',chip:'Descanso',cls:'acc'}
+};
+var DRIVERS=[
+  {id:'carlos',name:'Carlos Mendes',ok:true,note:'Descanso completo às 05:34. Saída às 06:00 atende as 11h.'},
+  {id:'diego',name:'Diego Alves',ok:false,note:'Descansou 9h40 de 11h. Só pode sair a partir das 14:10.'},
+  {id:'rita',name:'Rita Souza',ok:true,note:'Disponível. CNH E e MOPP em dia.'}
+];
+var PRACAS=[
+  {n:'Praça Campina Grande do Sul · BR-116',e:3.40},
+  {n:'Praça Barra do Turvo · BR-116',e:3.40},
+  {n:'Praça Cajati · BR-116',e:3.40},
+  {pause:'Pausa obrigatória 30 min · posto rede CP4, km 440',t:'10:40'},
+  {n:'Praça Miracatu · BR-116',e:3.40},
+  {n:'Praça Juquitiba · BR-116',e:3.40},
+  {pause:'Refeição 1h sugerida',t:'12:30'},
+  {n:'Pórtico free flow · [TRECHO]',e:3.10,ff:true},
+  {n:'Praça Indaiatuba · SP-075',e:11.90}
+];
+
+var S={
+  mode:'app', screen:'torre',
+  tab:'viagem', step:2, phase:'caminho', done:false, canhoto:false,
+  sheet:null, valor:'', opt:0, receipt:false, extra:[], jornada:'dirigindo', toast:'',
+  ctoast:'', driver:'carlos', suspensos:true, programada:false,
+  sp270:'pend', miracatu:'pend', avisoAna:false, aprovado:false, justificado:false
+};
+try{var saved=localStorage.getItem('cp4v-mode');if(saved==='app'||saved==='central')S.mode=saved;}catch(e){}
+var h=(location.hash||'').replace('#','');
+if(h==='central'||h==='app')S.mode=h;
+
+function set(p){for(var k in p)S[k]=p[k];render();}
+
+/* ---------- APP ---------- */
+function baseExpenses(){
+  var sp=S.justificado?{src:'Tag · justificado, em análise',cls:'warn'}:{src:'Tag · toque para justificar',cls:'bad'};
+  return [
+    {type:'Pedágio',place:'Miracatu · BR-116',detail:'Cobrado como 8 eixos (veículo tem 6)',value:'R$ 27,20',src:'Tag · divergência enviada ao gestor',cls:'bad'},
+    {type:'Pedágio',place:'Juquitiba · BR-116',detail:'6 eixos · 11:14',value:'R$ 20,40',src:'Tag · conciliado',cls:'ok'},
+    {type:'Pedágio',place:'Praça fora da rota · SP-270',detail:S.justificado?'Justificativa: desvio por acidente na SP-075':'Desvio não programado',value:'R$ 16,20',src:sp.src,cls:sp.cls,act:S.justificado?null:'justify'},
+    {type:'Manutenção',place:'Borracharia · Sorocaba/SP',detail:'Reparo de pneu · comprovante anexado',value:'R$ 120,00',src:'Pago por você · em análise',cls:'warn'},
+    {type:'Pedágio',place:'Indaiatuba · SP-075',detail:'6 eixos · 07:02',value:'R$ 71,40',src:'Tag · conciliado',cls:'ok'},
+    {type:'Abastecimento',place:'Posto rede CP4 · Paulínia/SP',detail:'312 L diesel S10 · aprovado por token',value:'R$ 1.872,00',src:'Rede CP4 · automático',cls:'ok'}
+  ];
+}
+function manualSum(){return 120+S.extra.reduce(function(a,e){return a+e.amount;},0);}
+
+function appView(){
+  var j=JORNADA[S.jornada];
+  var body='';
+  if(S.tab==='viagem'){
+    var delivered=S.done?3:Math.max(0,S.step-1);
+    var km=KM[S.step];
+    body+='<div class="card"><div class="row" style="align-items:center"><span class="mono small">VG-0412 · Carreta 6 eixos</span><span class="pill '+(S.done?'ok':'acc')+'" style="font-size:13px;border-radius:999px;padding:4px 10px">'+(S.done?'Finalizada':'Em andamento')+'</span></div>'
+      +'<div style="font-family:var(--display);font-size:24px;font-weight:700;line-height:1.15">Paulínia/SP → Curitiba/PR</div>'
+      +'<div style="display:flex;flex-direction:column;gap:6px"><div class="bar"><i style="width:'+Math.round(km/486*100)+'%"></i></div><div class="row small"><span class="mono">'+km+' de 486 km</span><span>'+delivered+' de 3 entregas</span></div></div></div>';
+    body+='<div class="card" style="gap:0;padding-bottom:4px"><div class="eyebrow" style="margin-bottom:12px">Roteiro</div>';
+    STOPS.forEach(function(s,i){
+      var d=i<S.step, c=i===S.step&&!S.done;
+      body+='<div class="stop '+(d?'done':c?'cur':'')+'"><div class="rail"><div class="dot"></div>'+(i<3?'<div class="ln"></div>':'')+'</div><div class="body"><div style="display:flex;flex-direction:column;gap:2px"><span class="eyebrow" style="font-size:11px">'+s.kind+'</span><span class="place">'+s.place+'</span><span class="small">'+s.doc+'</span></div><span class="mono small" style="white-space:nowrap;'+(c?'color:var(--accent)':'')+'">'+(d?s.time:s.eta)+'</span></div></div>';
+    });
+    body+='</div>';
+    if(!S.done&&S.step<4){
+      var n=STOPS[S.step];
+      if(S.phase==='caminho'){
+        body+='<div class="card focus"><span class="eyebrow" style="color:var(--accent)">Próxima parada</span><div style="font-size:18px;font-weight:600">'+n.place+'</div><div class="small" style="font-size:14px">'+n.doc+' · '+n.eta+'</div><button class="btn primary" data-a="arrive">Cheguei no local</button><span class="small">A chegada também é detectada pelo GPS a 300 m do destino.</span></div>';
+      } else {
+        body+='<div class="card focus"><span class="eyebrow" style="color:var(--accent)">No local · '+n.place+'</span>'
+          +'<label class="photo'+(S.canhoto?' done':'')+'" style="position:relative">'+(S.canhoto?I.check+' Canhoto anexado':I.cam+' Fotografar canhoto assinado')+'<input type="file" accept="image/*" id="canhoto" data-a="canhoto"></label>'
+          +'<button class="btn primary" data-a="deliver"'+(S.canhoto?'':' disabled')+'>Confirmar entrega</button>'
+          +(S.canhoto?'':'<span class="small">A foto do canhoto é obrigatória. Toque acima para anexar.</span>')
+          +'<button class="btn" data-a="toast" data-v="Ocorrência aberta: escolha avaria, recusa ou falta">Registrar ocorrência (avaria, recusa, falta)</button></div>';
+      }
+    } else if(!S.done){
+      body+='<div class="card focus"><span style="font-size:18px;font-weight:600">Todas as entregas concluídas</span><label class="f" for="odo">Hodômetro final<input class="inp mono" id="odo" inputmode="numeric" value="184.706"></label><button class="btn primary" data-a="finish">Finalizar viagem</button></div>';
+    } else {
+      body+='<div class="card" style="background:var(--ok-bg);border-color:var(--ok-bg);flex-direction:row;align-items:flex-start;color:var(--ok)">'+I.check+'<div style="display:flex;flex-direction:column;gap:4px"><b>Viagem finalizada às 18:34</b><span style="font-size:14px">Enviada para fechamento. Os pedágios da tag são conciliados com a rota automaticamente.</span><button class="linkbtn" style="align-self:flex-start;color:var(--ok)" data-a="goCentral" data-v="fechamento">Ver fechamento na Central</button></div></div>';
+      body+='<button class="btn" data-a="resetTrip">Reiniciar demonstração</button>';
+    }
+  }
+  if(S.tab==='despesas'){
+    var m=manualSum();
+    body+='<div class="card deep" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px"><div><div class="small" style="color:var(--deep-muted);font-size:12px">Adiantamento</div><div class="mono">R$ 800,00</div></div><div><div class="small" style="color:var(--deep-muted);font-size:12px">Pago por você</div><div class="mono">'+brl(m)+'</div></div><div><div class="small" style="color:var(--deep-muted);font-size:12px">Saldo</div><div class="mono" style="color:var(--mint)">'+brl(800-m)+'</div></div></div>';
+    body+='<div style="display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Lançar despesa</span><div class="grid2">'
+      +'<button class="tile" data-a="sheet" data-v="abast">'+I.fuel+'Abastecimento</button>'
+      +'<button class="tile" data-a="sheet" data-v="ped">'+I.toll+'Pedágio</button>'
+      +'<button class="tile" data-a="sheet" data-v="man">'+I.wrench+'Manutenção</button>'
+      +'<button class="tile" data-a="sheet" data-v="pern">'+I.bed+'Pernoite</button>'
+      +'</div><span class="small">Abastecimento na rede CP4 e pedágio com tag entram sozinhos. Lance só o que você pagou.</span></div>';
+    body+='<div style="display:flex;flex-direction:column;gap:10px"><span class="eyebrow">Nesta viagem</span>';
+    S.extra.map(function(e){return {type:e.type,place:e.place,detail:e.detail,value:brl(e.amount),src:'Pago por você · em análise',cls:'warn'};}).concat(baseExpenses()).forEach(function(e){
+      var tag=e.act?'button':'div';
+      body+='<'+tag+' class="exp'+(e.act?' tap':'')+'"'+(e.act?' data-a="'+e.act+'" style="text-align:left;font:inherit;color:inherit"':'')+'><div class="row"><div style="display:flex;flex-direction:column;gap:2px"><b style="font-size:15px">'+esc(e.type)+'</b><span class="small">'+esc(e.place)+'</span><span class="small">'+esc(e.detail)+'</span></div><span class="mono" style="white-space:nowrap">'+e.value+'</span></div><span class="pill '+e.cls+'">'+e.src+'</span></'+tag+'>';
+    });
+    body+='</div>';
+  }
+  if(S.tab==='jornada'){
+    body+='<div class="card deep"><span class="eyebrow">'+j.label+'</span><div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span class="big">'+j.big+'</span><span style="font-size:14px;color:var(--deep-muted)">'+j.sub+'</span></div><div class="bar" style="height:10px"><i style="width:'+j.pct+'%;background:'+j.bar+'"></i></div><div style="font-size:14px;line-height:20px">'+j.alert+'</div></div>';
+    body+='<div class="grid2">';
+    [['dirigindo','Dirigir'],['pausa','Pausa'],['refeicao','Refeição'],['espera','Espera']].forEach(function(k){
+      body+='<button class="jbtn" data-a="jornada" data-v="'+k[0]+'" aria-pressed="'+(S.jornada===k[0])+'">'+k[1]+'</button>';
+    });
+    body+='</div><button class="btn" data-a="jornada" data-v="descanso">Encerrar jornada e iniciar descanso</button>';
+    body+='<div class="card"><span class="eyebrow">Hoje · início 05:40</span><div class="timeline"><i style="width:6%;background:var(--stone)"></i><i style="width:30%;background:var(--accent)"></i><i style="width:5%;background:var(--amber)"></i><i style="width:6%;background:var(--blue)"></i><i style="width:32%;background:var(--accent)"></i><i style="width:21%;background:var(--track)"></i></div>'
+      +'<div class="legend"><span><i style="background:var(--accent)"></i>Direção</span><span><i style="background:var(--amber)"></i>Pausa</span><span><i style="background:var(--blue)"></i>Espera</span><span><i style="background:var(--stone)"></i>Carga/outros</span></div>'
+      +'<div class="grid2"><div><div class="small" style="font-size:12px">Jornada</div><div class="mono">7h05 <span class="small">/ 8h + 2h</span></div></div><div><div class="small" style="font-size:12px">Direção</div><div class="mono">5h48</div></div><div><div class="small" style="font-size:12px">Pausas</div><div class="mono">0h30</div></div><div><div class="small" style="font-size:12px">Espera</div><div class="mono">0h35</div></div></div>'
+      +'<div class="pill ok" style="font-size:13px;padding:8px 10px;white-space:normal;align-self:stretch">Descanso antes desta jornada: 11h20 (mínimo 11h)</div></div>';
+    body+='<div class="card"><span class="eyebrow">Documentos</span>'
+      +'<div class="doc"><div><b style="font-size:15px">CNH categoria E · EAR</b><div class="small">Válida até 14/03/2028</div></div><span class="pill ok">Em dia</span></div>'
+      +'<div class="doc"><div><b style="font-size:15px">Exame toxicológico</b><div class="small">Vence em 02/11/2026 · 34 dias</div></div><button class="pill warn" style="border:0;min-height:32px" data-a="toast" data-v="Clínicas credenciadas perto da sua rota abertas">Agendar</button></div>'
+      +'<div class="doc"><div><b style="font-size:15px">Curso MOPP</b><div class="small">Válido até 08/2027</div></div><span class="pill ok">Em dia</span></div></div>';
+  }
+
+  var sheet='';
+  if(S.sheet){
+    var sh=SHEETS[S.sheet];
+    sheet='<div class="sheet-bg" data-a="closeSheetBg"><div class="sheet" role="dialog" aria-modal="true" aria-label="Lançar '+sh.label+'">'
+      +'<div class="row" style="align-items:center"><h3>Lançar '+sh.label+'</h3><button class="iconbtn" data-a="closeSheet" aria-label="Fechar">'+I.x+'</button></div>'
+      +'<div class="hint">'+sh.hint+'</div>'
+      +'<label class="photo'+(S.receipt?' done':'')+'" style="position:relative">'+(S.receipt?I.check+' Comprovante anexado':I.cam+' Fotografar comprovante')+'<input type="file" accept="image/*" id="receipt" data-a="receipt"></label>'
+      +'<label class="f" for="valor">Valor (R$)<input class="inp mono" id="valor" inputmode="decimal" placeholder="0,00" value="'+esc(S.valor)+'" style="font-size:20px;min-height:52px"></label>';
+    if(S.sheet==='abast') sheet+='<div class="grid2"><label class="f" for="litros">Litros<input class="inp mono" id="litros" inputmode="decimal" placeholder="0"></label><label class="f" for="hodo">Hodômetro<input class="inp mono" id="hodo" inputmode="numeric" placeholder="184.438"></label></div>';
+    if(S.sheet==='ped') sheet+='<label class="f" for="praca">Praça (sugerida pela rota)<select class="inp" id="praca"><option>Registro · BR-116</option><option>Cajati · BR-116</option><option>Barra do Turvo · BR-116</option><option>Outra praça</option></select></label>';
+    if(sh.opts){sheet+='<div class="chipset" role="group" aria-label="Opções">';sh.opts.forEach(function(o,i){sheet+='<button data-a="opt" data-v="'+i+'" aria-pressed="'+(S.opt===i)+'">'+o+'</button>';});sheet+='</div>';}
+    sheet+='<div class="small" style="display:flex;align-items:center;gap:6px">'+I.pin+' BR-116, km 440 · Registro/SP · 13:02 (GPS)</div>'
+      +'<button class="btn primary" data-a="save">Enviar para aprovação</button></div></div>';
+  }
+  var toast=S.toast?'<div class="toast" role="status"><span>'+esc(S.toast)+'</span><button class="iconbtn" style="background:transparent;color:inherit" data-a="closeToast" aria-label="Fechar aviso">'+I.x+'</button></div>':'';
+  var navb=function(t,label,ic){return '<button data-a="tab" data-v="'+t+'"'+(S.tab===t?' aria-current="page"':'')+'>'+ic+label+'</button>';};
+
+  return '<div class="appwrap"><div class="phone" aria-label="App do motorista">'
+    +'<div class="ph-head"><div class="ph-row"><div class="brand"><div class="mark">CP4</div><div style="display:flex;flex-direction:column;line-height:1.15"><b style="font-size:18px">Viagens</b><span style="font-size:13px;color:var(--deep-muted)">Carlos Mendes · RTA4E21</span></div></div><button class="avatar" aria-label="Perfil do motorista" data-a="toast" data-v="Perfil: CNH E, MOPP, toxicológico e histórico de jornadas">CM</button></div>'
+    +'<div class="chips"><span class="hchip mono">'+(S.done?'VG-0412 · finalizada':'Em viagem · VG-0412')+'</span><span class="hchip pill '+j.cls+'" style="border-radius:999px;padding:6px 10px;font-size:13px">'+j.chip+'</span></div></div>'
+    +'<div class="ph-main" id="phmain">'+body+'</div>'+toast
+    +'<nav class="ph-nav" aria-label="Seções do app">'+navb('viagem','Viagem',I.pin)+navb('despesas','Despesas',I.receipt)+navb('jornada','Jornada',I.clock)+'</nav>'
+    +sheet+'</div>'
+    +'<aside class="demo"><h2>Roteiro da demonstração</h2><ol>'
+    +'<li><b>Viagem:</b> toque em “Cheguei no local”, anexe a foto do canhoto e confirme a entrega em Registro.</li>'
+    +'<li><b>Despesas:</b> lance um pedágio pago em dinheiro e veja o saldo do adiantamento cair. Toque na passagem fora da rota para justificar.</li>'
+    +'<li><b>Jornada:</b> troque para Pausa e veja a direção contínua zerar.</li>'
+    +'<li>Abra a <button class="linkbtn" data-a="goCentral" data-v="torre">Torre de controle</button>: a viagem VG-0412 reflete o que o motorista fez.</li>'
+    +'<li>Finalize a viagem e aprove o <button class="linkbtn" data-a="goCentral" data-v="fechamento">fechamento</button> com a régua de pedágio.</li>'
+    +'</ol><p class="note">O motorista só lança o que o sistema não sabe. Abastecimento na rede CP4 e pedágio com tag entram sozinhos pela conciliação.</p></aside></div>';
+}
+
+/* ---------- CENTRAL ---------- */
+function sideNav(){
+  var alerts=(S.avisoAna?0:1)+(S.miracatu==='pend'?1:0)+(S.sp270==='pend'?1:0);
+  var items=[['programar','Programar viagem'],['torre','Torre de controle',alerts],['fechamento','Fechamento'],['integracao','Integração · pedágio']];
+  var s='<nav class="side" aria-label="Central">';
+  items.forEach(function(it){s+='<button data-a="screen" data-v="'+it[0]+'"'+(S.screen===it[0]?' aria-current="page"':'')+'><span>'+it[1]+'</span>'+(it[2]?'<span class="badge">'+it[2]+'</span>':'')+'</button>';});
+  return s+'<div class="foot">Central de Inteligência Operacional</div></nav>';
+}
+function tollTotal(){var eix=S.suspensos?4:6,t=0;PRACAS.forEach(function(p){if(p.e)t+=Math.round(p.e*eix*100)/100;});return t;}
+
+function progView(){
+  var eix=S.suspensos?4:6, d=DRIVERS.filter(function(x){return x.id===S.driver;})[0];
+  var total=tollTotal(), full=192;
+  var s='<div class="shead"><div><div class="small">Viagens › Nova</div><h1>Programar viagem · VG-0414</h1></div><div class="actions"><button class="btn" data-a="ctoast" data-v="Rascunho salvo">Salvar rascunho</button><button class="btn primary" style="min-height:48px;font-size:15px" data-a="programar"'+(d.ok&&!S.programada?'':' disabled')+'>'+(S.programada?'Enviada ao motorista':'Programar e enviar ao motorista')+'</button></div></div>';
+  s+='<div class="cols prog">';
+  s+='<div style="display:flex;flex-direction:column;gap:16px;min-width:0"><section class="panel"><h2>Motorista e veículo</h2>'
+    +'<label class="f" for="drv" style="font-size:13px;color:var(--muted)">Motorista<select class="fieldbox" id="drv" data-a="driver">'+DRIVERS.map(function(x){return '<option value="'+x.id+'"'+(x.id===S.driver?' selected':'')+'>'+x.name+'</option>';}).join('')+'</select></label>'
+    +'<span class="pill '+(d.ok?'ok':'bad')+'" style="white-space:normal">'+d.note+'</span>'
+    +'<label class="f" style="font-size:13px;color:var(--muted)">Veículo<div class="fieldbox" style="display:flex;align-items:center;justify-content:space-between;color:var(--fg)"><span class="mono">RTA4E21</span><span class="small">Cavalo + carreta · 6 eixos</span></div></label>'
+    +'<div class="row" style="align-items:center;font-size:14px"><span id="susp-l">Retorno vazio com 2 eixos suspensos</span><button class="switch" role="switch" aria-checked="'+S.suspensos+'" aria-labelledby="susp-l" data-a="susp"><i></i></button></div>'
+    +'<span class="small">Pedágio calculado com <b class="mono">'+eix+' eixos</b>.'+(S.suspensos?' Economia de <b class="mono">'+brl(full-total)+'</b> nesta viagem.':'')+'</span></section>'
+    +'<section class="panel"><h2>Paradas</h2>'
+    +'<div class="row" style="align-items:center"><div><b>Curitiba/PR</b><div class="small">Saída · pátio do cliente</div></div><span class="mono small">06:00</span></div>'
+    +'<div class="row" style="align-items:center"><div><b>Paulínia/SP</b><div class="small">Chegada · CD Paulínia</div></div><span class="mono small">15:40</span></div>'
+    +'<button class="btn" style="border-style:dashed;color:var(--accent)" data-a="ctoast" data-v="Importar NF-e ou adicionar parada manualmente">+ Adicionar parada ou importar NF-e</button></section>'
+    +'<section class="panel"><h2>Documentos</h2><div class="kv"><span>MDF-e</span><span class="pill neutral">Não se aplica · vazio</span></div><div class="kv"><span>Vale-pedágio</span><span class="pill neutral">Sem embarcador</span></div></section></div>';
+  s+='<section class="panel"><div class="row"><div><h2>Rota e pedágios previstos</h2><div class="small">412 km · 7h10 de direção · chegada 15:40 já com pausas</div></div><span class="pill acc">Motor de pedágio</span></div><div class="route">'
+    +'<div class="r stopr"><span class="m" style="background:var(--fg)"></span><span>Curitiba/PR · saída</span><span class="mono small">06:00</span></div>';
+  PRACAS.forEach(function(p){
+    if(p.pause){s+='<div class="r pause"><span class="m"></span><span>'+p.pause+'</span><span class="mono">'+p.t+'</span></div>';return;}
+    s+='<div class="r'+(p.ff?' ff':'')+'"><span class="m"></span><span class="small" style="font-size:14px">'+p.n+' · '+eix+' eixos</span><span class="mono">'+brl(Math.round(p.e*eix*100)/100)+'</span></div>';
+  });
+  s+='<div class="r stopr"><span class="m"></span><span>Paulínia/SP · chegada</span><span class="mono small">15:40</span></div></div>'
+    +'<div class="kv total" style="font-size:15px"><span>7 pontos de cobrança · previsto</span><span class="mono">'+brl(total)+'</span></div></section>';
+  var diesel=1030;
+  s+='<div style="display:flex;flex-direction:column;gap:16px;min-width:0"><section class="panel"><h2>Pré-checagem</h2>'
+    +chk(d.ok?'ok':'bad',d.ok?'OK':'BLOQUEIA','Jornada',d.ok?'2 pausas + 1 refeição. Maior trecho contínuo: 4h40 (limite 5h30).':d.note)
+    +chk('ok','OK','CNH E com EAR','Válida durante toda a viagem.')
+    +(S.driver==='carlos'?chk('warn','ATENÇÃO','Toxicológico vence em 34 dias','Não bloqueia. Motorista avisado no app.'):'')
+    +chk('ok','OK','Veículo · tag ativa','Preventiva em 1.200 km (Central de Inteligência).')
+    +'</section><section class="panel deep"><h2>Custo previsto</h2>'
+    +'<div class="kv"><span class="small">Pedágio</span><span class="mono">'+brl(total)+'</span></div>'
+    +'<div class="kv"><span class="small">Diesel · 172 L a 2,4 km/l</span><span class="mono">'+brl(diesel)+'</span></div>'
+    +'<div class="kv"><span class="small">Adiantamento ao motorista</span><span class="mono">R$ 300,00</span></div>'
+    +'<div class="kv total"><span>Referência para o fechamento</span><span class="mono" style="color:var(--mint)">'+brl(total+diesel+300)+'</span></div>'
+    +'<span class="small" style="font-size:12px">Diesel e tarifas: [VALORES REAIS DA REDE E DA ANTT]</span></section></div>';
+  return s+'</div>';
+}
+function chk(cls,tag,t,d){return '<div class="check"><span class="pill '+cls+'">'+tag+'</span><div><b style="font-size:14px">'+t+'</b><div class="small">'+d+'</div></div></div>';}
+
+function torreView(){
+  var j=JORNADA[S.jornada];
+  var next=S.done?'Finalizada 18:34':(S.step<4?STOPS[S.step].place+' · '+STOPS[S.step].eta.replace('ETA ',''):'Fechando viagem');
+  var vg412dir=S.jornada==='dirigindo'?{t:'4h12',w:76,c:'var(--amber)',tc:'var(--warn)'}:{t:j.chip.toLowerCase(),w:0,c:'var(--accent)',tc:'var(--muted)'};
+  var rows=[
+    {id:'VG-0409',m:'Ana Ribeiro',r:'Campinas → Uberlândia',n:'Ribeirão Preto · 12:10',d:S.avisoAna?{t:'pausa 0h02',w:0,c:'var(--accent)',tc:'var(--muted)'}:{t:'5h10',w:94,c:'var(--bad)',tc:'var(--bad)'},st:S.avisoAna?['acc','Em pausa']:['bad','Parar agora'],hot:!S.avisoAna},
+    {id:'VG-0412',m:'Carlos Mendes',r:'Paulínia → Curitiba',n:next,d:S.done?{t:'descanso',w:0,c:'var(--accent)',tc:'var(--muted)'}:vg412dir,st:S.done?['ok','Finalizada']:['ok','No prazo'],link:true},
+    {id:'VG-0410',m:'João Pereira',r:'Jundiaí → Rio de Janeiro',n:'Resende/RJ · 14:25',d:{t:'2h05',w:38,c:'var(--accent)'},st:['warn','+40 min']},
+    {id:'VG-0405',m:'Marcos Lima',r:'Santos → Campo Grande',n:'Pres. Prudente · 16:50',d:{t:'3h30',w:64,c:'var(--accent)'},st:['ok','No prazo']},
+    {id:'VG-0411',m:'Rita Souza',r:'Paulínia → Belo Horizonte',n:'Pouso Alegre · 12:55',d:{t:'pausa 0h18',w:0,c:'var(--accent)',tc:'var(--muted)'},st:['acc','Em pausa']},
+    {id:'VG-0402',m:'Luiz Costa',r:'Cubatão → Curitiba',n:'Descarga em Curitiba',d:{t:'espera 1h50',w:0,c:'var(--accent)',tc:'var(--info)'},st:['info','Em espera']},
+    {id:'VG-0413',m:'Diego Alves',r:'Americana → Goiânia',n:'Início bloqueado',d:{t:'descanso 9h40',w:0,c:'var(--accent)',tc:'var(--muted)'},st:['neutral','Liberado 14:10']}
+  ];
+  if(S.programada){var dn=DRIVERS.filter(function(x){return x.id===S.driver;})[0].name;rows.push({id:'VG-0414',m:dn,r:'Curitiba → Paulínia',n:'Saída amanhã · 06:00',d:{t:'—',w:0,c:'var(--accent)',tc:'var(--muted)'},st:['acc','Programada']});}
+  var s='<div class="shead"><div><div class="small">Terça, 29/09 · atualizado há 1 min</div><h1>Torre de controle</h1></div><div class="actions"><button class="btn" data-a="screen" data-v="programar">+ Nova viagem</button></div></div>';
+  var alertCount=(S.avisoAna?0:1);
+  s+='<div class="kpis"><div class="kpi"><span class="small">Viagens em curso</span><b>'+(S.done?6:7)+'</b></div><div class="kpi"><span class="small">Atrasadas</span><b style="color:var(--warn)">1</b></div><div class="kpi"><span class="small">Alertas de jornada</span><b style="color:'+(alertCount?'var(--bad)':'var(--ok)')+'">'+alertCount+'</b></div><div class="kpi"><span class="small">Divergências de pedágio</span><b style="color:var(--warn)">'+((S.miracatu==='pend'?1:0)+(S.sp270==='pend'?1:0))+'</b></div></div>';
+  s+='<div class="cols side-r"><div class="tbl-wrap"><table><thead><tr><th>Viagem</th><th>Motorista</th><th>Rota</th><th>Próxima · ETA</th><th>Direção contínua</th><th>Status</th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    s+='<tr class="'+(r.hot?'hot ':'')+(r.link?'clickable':'')+'"'+(r.link?' data-a="mode" data-v="app" title="Abrir no app do motorista"':'')+'><td class="mono">'+r.id+(r.link?' <span class="small">↗</span>':'')+'</td><td>'+r.m+'</td><td>'+r.r+'</td><td>'+r.n+'</td><td><span class="mono" style="color:'+(r.d.tc||'var(--fg)')+';font-weight:600">'+r.d.t+'</span><div class="mini"><i style="width:'+r.d.w+'%;background:'+r.d.c+'"></i></div></td><td><span class="pill '+r.st[0]+'">'+r.st[1]+'</span></td></tr>';
+  });
+  s+='</tbody></table></div><div style="display:flex;flex-direction:column;gap:12px"><h2 style="font-size:16px">Alertas</h2>';
+  if(!S.avisoAna) s+='<div class="alert crit"><span class="t">Jornada · crítico</span><span><b>Ana Ribeiro</b> está há 5h10 dirigindo sem pausa. Precisa parar em até 20 min.</span><div class="actions"><button class="btn primary sm" data-a="avisoAna">Avisar no app</button><button class="btn sm" data-a="ctoast" data-v="Ligue para Ana Ribeiro: (19) [TELEFONE]">Ligar</button></div></div>';
+  if(S.miracatu==='pend') s+='<div class="alert w"><span class="t">Pedágio · conciliação</span><span><b>VG-0412</b> · Miracatu cobrou 8 eixos (veículo tem 6). Diferença de R$ 6,80.</span><button class="btn sm" style="align-self:flex-start" data-a="screen" data-v="fechamento">Ver na régua</button></div>';
+  if(S.sp270==='pend') s+='<div class="alert w"><span class="t">Pedágio · fora da rota</span><span><b>VG-0412</b> · passagem na SP-270 não programada. '+(S.justificado?'Motorista justificou: desvio por acidente.':'Aguardando justificativa do motorista.')+'</span></div>';
+  s+='<div class="alert"><span class="t">Jornada · bloqueio</span><span><b>VG-0413</b> não pode iniciar: Diego Alves descansou 9h40 de 11h. Liberado às 14:10.</span></div>'
+    +'<div class="alert"><span class="t">Documentos</span><span>Toxicológico de <b>Carlos Mendes</b> vence em 34 dias.</span></div>';
+  return s+'</div></div>';
+}
+
+function fechView(){
+  var status=function(k){
+    var v=S[k];
+    if(v==='aceito')return '<span class="pill ok">Aceito</span>';
+    if(v==='glosado')return '<span class="pill neutral">Glosado do motorista</span>';
+    if(v==='contestado')return '<span class="pill info">Contestação enviada</span>';
+    return null;
+  };
+  var extras=S.extra.reduce(function(a,e){return a+e.amount;},0);
+  var gl=S.sp270==='glosado'?16.20:0;
+  var desp=120+20.40+90+extras;
+  var saldo=800-desp+gl;
+  var s='<div class="shead"><div><div class="small">Carlos Mendes · RTA4E21 · '+(S.done?'finalizada 29/09 às 18:34':'em andamento')+'</div><h1>Fechamento · VG-0412</h1></div><div class="actions"><button class="btn" data-a="ctoast" data-v="Devolvido ao motorista para ajuste"'+(S.done&&!S.aprovado?'':' disabled')+'>Devolver ao motorista</button><button class="btn primary" style="min-height:48px;font-size:15px" data-a="aprovar"'+(S.done&&!S.aprovado?'':' disabled')+'>'+(S.aprovado?'Acerto aprovado':'Aprovar acerto')+'</button></div></div>';
+  if(!S.done) s+='<div class="banner warn"><span>A viagem ainda está em andamento. Este é um fechamento parcial; a aprovação libera quando o motorista finalizar.</span><button class="btn sm" data-a="finishFromCentral">Simular fim da viagem</button></div>';
+  if(S.aprovado) s+='<div class="banner ok"><span>Acerto aprovado. Saldo de '+brl(saldo)+' enviado ao financeiro para devolução.</span></div>';
+  var real=176+20.40-(S.miracatu==='contestado'?0:0);
+  s+='<div class="kpis"><div class="kpi"><span class="small">Pedágio previsto</span><b class="mono" style="font-size:22px">R$ 192,00</b></div><div class="kpi"><span class="small">Realizado (tag + manual)</span><b class="mono" style="font-size:22px">'+brl(real)+'</b></div><div class="kpi"><span class="small">Free flow a cobrar</span><b class="mono" style="font-size:22px">R$ 18,60</b></div><div class="kpi"><span class="small">Divergências abertas</span><b class="mono" style="font-size:22px;color:var(--warn)">'+(1+(S.sp270==='pend'?1:0)+(S.miracatu==='pend'?1:0))+'</b></div></div>';
+  s+='<div class="cols side-r"><div style="display:flex;flex-direction:column;gap:10px;min-width:0"><div class="row" style="align-items:center"><h2 style="font-size:16px">Régua de pedágio · previsto × realizado</h2><span class="pill acc">Fonte: conciliação de pedágio</span></div><div class="tbl-wrap"><table><thead><tr><th>Praça</th><th class="num">Previsto</th><th class="num">Tag</th><th class="num">Manual</th><th>Situação</th></tr></thead><tbody>'
+    +tr('Indaiatuba · SP-075','','71,40','71,40','—','<span class="pill ok">Conciliado</span>')
+    +tr('Praça SP-270',S.justificado?'Motorista: “desvio por acidente na SP-075”':'Sem justificativa do motorista','—','16,20','—',status('sp270')||'<div class="actions" style="align-items:center"><span class="pill warn">Fora da rota</span><button class="btn sm" data-a="res" data-k="sp270" data-v="aceito">Aceitar</button><button class="btn sm" data-a="res" data-k="sp270" data-v="glosado">Glosar</button></div>')
+    +tr('Juquitiba · BR-116','','20,40','20,40','—','<span class="pill ok">Conciliado</span>')
+    +tr('Miracatu · BR-116','Cobrado como 8 eixos; veículo tem 6','20,40','<span style="color:var(--bad)">27,20</span>','—',status('miracatu')||'<div class="actions" style="align-items:center"><span class="pill bad">Categoria errada</span><button class="btn primary sm" data-a="res" data-k="miracatu" data-v="contestado">Contestar R$ 6,80</button></div>')
+    +tr('Cajati · BR-116','','20,40','20,40','—','<span class="pill ok">Conciliado</span>')
+    +tr('Barra do Turvo · BR-116','Tag não leu; pago em dinheiro','20,40','—','20,40','<span class="pill warn">Vigiar duplicidade na fatura</span>')
+    +tr('Campina Grande do Sul · BR-116','','20,40','20,40','—','<span class="pill ok">Conciliado</span>')
+    +tr('Pórtico free flow · [TRECHO]','','18,60','—','—','<span class="pill info">Aguardando cobrança</span>')
+    +'<tr><td><b>Total</b></td><td class="num"><b>192,00</b></td><td class="num"><b>176,00</b></td><td class="num"><b>20,40</b></td><td class="small">Vale-pedágio recebido: R$ 192,00</td></tr>'
+    +'</tbody></table></div></div>';
+  s+='<div style="display:flex;flex-direction:column;gap:14px"><section class="panel deep"><h2>Acerto do motorista</h2>'
+    +'<div class="kv"><span class="small">Adiantamento</span><span class="mono">R$ 800,00</span></div>'
+    +'<div class="kv"><span class="small">Manutenção (pneu)</span><span class="mono">− R$ 120,00</span></div>'
+    +'<div class="kv"><span class="small">Pedágio em dinheiro</span><span class="mono">− R$ 20,40</span></div>'
+    +'<div class="kv"><span class="small">Pernoite · pátio com segurança</span><span class="mono">− R$ 90,00</span></div>'
+    +S.extra.map(function(e){return '<div class="kv"><span class="small">'+esc(e.type)+' · lançado no app</span><span class="mono">− '+brl(e.amount)+'</span></div>';}).join('')
+    +(gl?'<div class="kv"><span class="small">Glosa · pedágio fora da rota</span><span class="mono">+ R$ 16,20</span></div>':'')
+    +'<div class="kv total"><span>Saldo a devolver</span><span class="mono" style="color:var(--mint)">'+brl(saldo)+'</span></div></section>'
+    +'<section class="panel"><h2>Jornada na viagem</h2><div class="kv"><span>Direção total</span><span class="mono">8h02</span></div><div class="kv"><span>Maior trecho contínuo</span><span class="mono">5h12</span></div><div class="kv"><span>Horas extras</span><span class="mono">1h40</span></div><span class="pill ok">Sem violação de descanso</span></section>'
+    +'<section class="panel"><h2>Entregas e combustível</h2><div class="kv"><span>Entregas com canhoto</span><b>'+(S.done?3:Math.max(0,S.step-1))+' de 3</b></div><div class="kv"><span>Diesel · rede CP4 (312 L)</span><span class="mono">R$ 1.872,00</span></div><div class="kv"><span>Consumo · meta 2,40 km/l</span><span class="mono">2,36 km/l</span></div></section></div></div>';
+  return s;
+}
+function tr(n,sub,p,t,m,st){return '<tr><td>'+n+(sub?'<div class="small">'+sub+'</div>':'')+'</td><td class="num">'+p+'</td><td class="num">'+t+'</td><td class="num">'+m+'</td><td>'+st+'</td></tr>';}
+
+function integView(){
+  return '<div class="shead"><div><div class="small">Arquitetura</div><h1>Integração com a conciliação de pedágio</h1></div></div>'
+  +'<p style="margin:0;max-width:68ch;color:var(--muted)">A viagem programada vira a régua. A conciliação casa cada passagem da tag com a viagem pela placa, pela janela de tempo e pela praça na rota, e devolve o previsto e o realizado por praça.</p>'
+  +'<section class="panel"><h2>Fluxos entre sistemas</h2><div class="flow"><span class="node">App do motorista</span><span class="arrow" aria-hidden="true">→</span><span class="node">CP4 Viagens</span><span class="small">entregas, despesas e jornada</span></div><div class="flow"><span class="node">Rede CP4 · abastecimento</span><span class="arrow" aria-hidden="true">→</span><span class="node">CP4 Viagens</span><span class="small">litros e KM aprovados por token</span></div><div class="flow"><span class="node">CP4 Viagens</span><span class="arrow" aria-hidden="true">→</span><span class="node">Conciliação de pedágio</span><span class="small">placa, eixos, rota e janela de tempo</span></div><div class="flow"><span class="node">Emissoras de tag e free flow</span><span class="arrow" aria-hidden="true">→</span><span class="node">Conciliação de pedágio</span><span class="small">passagens por placa, praça e horário</span></div><div class="flow"><span class="node">Conciliação de pedágio</span><span class="arrow" aria-hidden="true">→</span><span class="node">CP4 Viagens</span><span class="small">previsto × realizado e divergências</span></div><div class="flow"><span class="node">CP4 Viagens</span><span class="arrow" aria-hidden="true">→</span><span class="node">Torre de controle</span><span class="small">status, ETA e alertas</span></div><div class="flow"><span class="node">Conciliação de pedágio</span><span class="arrow" aria-hidden="true">→</span><span class="node">Financeiro / ERP</span><span class="small">contestações e glosas</span></div></section>'
+  +'<div class="cols side-r"><section class="panel"><h2>Eventos trocados</h2><pre class="code">// CP4 Viagens → Conciliação\nPOST /conciliacao/viagens\n{\n  "viagem_id": "VG-0412",\n  "placa": "RTA4E21",\n  "eixos": 6,\n  "eixos_suspensos_retorno": 2,\n  "janela": { "inicio": "2026-09-29T06:10-03:00",\n              "fim":    "2026-09-29T18:34-03:00" },\n  "rota_pracas": ["IND-SP075", "JUQ-BR116", "MIR-BR116", ...]\n}\n\n// Conciliação → CP4 Viagens (webhook)\nviagem.pedagio.atualizado\n{\n  "viagem_id": "VG-0412",\n  "previsto": 192.00, "realizado_tag": 176.00,\n  "divergencias": [\n    { "praca": "MIR-BR116", "tipo": "categoria_eixo",\n      "cobrado_eixos": 8, "valor_diferenca": 6.80 },\n    { "praca": "SP270-X", "tipo": "fora_da_rota", "valor": 16.20 }\n  ]\n}</pre></section>'
+  +'<section class="panel"><h2>Divergências tratadas</h2>'
+  +['Categoria de eixo cobrada errada','Eixo suspenso cobrado no retorno vazio','Passagem fora da rota programada','Duplicidade: tag e dinheiro na mesma praça','Free flow sem pagamento no prazo','Passagem sem viagem aberta para a placa'].map(function(x){return '<div class="kv"><span>'+x+'</span></div>';}).join('')
+  +'<div class="small">Passagem sem casamento vira alerta na Torre, nunca custo aceito automaticamente.</div></section></div>';
+}
+
+function centralView(){
+  var v=S.screen==='programar'?progView():S.screen==='torre'?torreView():S.screen==='fechamento'?fechView():integView();
+  return '<div class="central">'+sideNav()+'<main class="screen">'+v+'</main></div>'+(S.ctoast?'<div class="ctoast" role="status">'+esc(S.ctoast)+'<button class="iconbtn" style="background:transparent;color:inherit;width:32px;height:32px" data-a="closeCtoast" aria-label="Fechar aviso">'+I.x+'</button></div>':'');
+}
+
+var root=document.getElementById('root');
+var scrollKeep=0;
+function render(){
+  var ph=document.getElementById('phmain'); if(ph)scrollKeep=ph.scrollTop;
+  document.getElementById('seg-app').setAttribute('aria-pressed',S.mode==='app');
+  document.getElementById('seg-central').setAttribute('aria-pressed',S.mode==='central');
+  root.innerHTML=S.mode==='app'?appView():centralView();
+  var ph2=document.getElementById('phmain'); if(ph2&&S._keep)ph2.scrollTop=scrollKeep; S._keep=false;
+}
+var tt;
+function ctoast(m){S.ctoast=m;render();clearTimeout(tt);tt=setTimeout(function(){S.ctoast='';render();},3500);}
+
+document.addEventListener('click',function(ev){
+  var el=ev.target.closest('[data-a]'); if(!el||el.tagName==='INPUT'||el.tagName==='SELECT')return;
+  var a=el.getAttribute('data-a'), v=el.getAttribute('data-v');
+  if(a==='closeSheetBg'&&ev.target!==el)return;
+  switch(a){
+    case 'mode': S.mode=v; try{localStorage.setItem('cp4v-mode',v);}catch(e){} render(); window.scrollTo(0,0); break;
+    case 'goCentral': S.mode='central'; S.screen=v; render(); window.scrollTo(0,0); break;
+    case 'tab': set({tab:v}); break;
+    case 'arrive': set({phase:'local',canhoto:false}); break;
+    case 'deliver': set({step:S.step+1,phase:'caminho',canhoto:false,toast:'Entrega confirmada com canhoto'}); break;
+    case 'finish': set({done:true,jornada:'descanso',toast:'Viagem enviada para fechamento'}); break;
+    case 'resetTrip': set({step:2,phase:'caminho',done:false,jornada:'dirigindo',aprovado:false,toast:''}); break;
+    case 'toast': S._keep=true; set({toast:v}); break;
+    case 'closeToast': S._keep=true; set({toast:''}); break;
+    case 'sheet': S._keep=true; set({sheet:v,valor:'',opt:0,receipt:false}); break;
+    case 'closeSheet': case 'closeSheetBg': S._keep=true; set({sheet:null}); break;
+    case 'opt': S._keep=true; set({opt:+v}); break;
+    case 'justify': S._keep=true; set({justificado:true,toast:'Justificativa enviada: desvio por acidente na SP-075'}); break;
+    case 'save':
+      var raw=(document.getElementById('valor')||{}).value||'';
+      var n=parseFloat(raw.replace(/\./g,'').replace(',','.'));
+      if(!(n>0)){var inp=document.getElementById('valor');inp.focus();inp.setAttribute('aria-invalid','true');inp.style.borderColor='var(--bad)';inp.placeholder='Informe o valor pago';return;}
+      var sh=SHEETS[S.sheet], opt=sh.opts?' · '+sh.opts[S.opt]:'';
+      var p={extra:[{type:sh.name,place:'BR-116, km 440 · Registro/SP',detail:'Lançado agora'+opt+(S.receipt?' · comprovante anexado':' · sem comprovante'),amount:n}].concat(S.extra),sheet:null,valor:'',tab:'despesas',toast:'Despesa enviada para aprovação'};
+      if(S.sheet==='pern')p.jornada='descanso';
+      set(p); break;
+    case 'jornada': S._keep=true; set({jornada:v}); break;
+    case 'screen': S.screen=v; render(); window.scrollTo(0,0); break;
+    case 'susp': set({suspensos:!S.suspensos}); break;
+    case 'programar': S.programada=true; ctoast('VG-0414 programada e enviada ao app do motorista'); break;
+    case 'ctoast': ctoast(v); break;
+    case 'closeCtoast': S.ctoast=''; render(); break;
+    case 'avisoAna': S.avisoAna=true; ctoast('Aviso enviado. Ana Ribeiro iniciou a pausa.'); break;
+    case 'res': S[el.getAttribute('data-k')]=v; ctoast(v==='contestado'?'Contestação de R$ 6,80 enviada à emissora da tag':v==='glosado'?'R$ 16,20 glosado do acerto do motorista':'Passagem aceita como custo da viagem'); break;
+    case 'aprovar': S.aprovado=true; ctoast('Acerto aprovado e enviado ao financeiro'); break;
+    case 'finishFromCentral': S.step=4; S.done=true; S.jornada='descanso'; render(); break;
+  }
+});
+document.addEventListener('input',function(ev){ if(ev.target.id==='valor'){S.valor=ev.target.value;ev.target.style.borderColor='';} });
+document.addEventListener('change',function(ev){
+  var t=ev.target;
+  if(t.id==='canhoto'&&t.files&&t.files.length){S._keep=true;set({canhoto:true});}
+  if(t.id==='receipt'&&t.files&&t.files.length){S._keep=true;var val=(document.getElementById('valor')||{}).value;set({receipt:true,valor:val||S.valor});}
+  if(t.id==='drv'){set({driver:t.value,programada:false});}
+});
+document.addEventListener('keydown',function(ev){ if(ev.key==='Escape'&&S.sheet){S._keep=true;set({sheet:null});} });
+render();
+})();
+</script>
+
+</body>
+</html>
